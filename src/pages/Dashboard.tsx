@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+// @ts-ignore
+import type { Range } from "react-date-range";
 
 // Data dummy dengan tanggal berjarak
 const allData = [
