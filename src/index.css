@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.rdrDayNumber span {
+  color: #1e293b !important;
+}
+
+.rdrDayToday .rdrDayNumber span:after {
+  background: #ef4444 !important;
+}
+
+.rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
+  background: #ef4444 !important;
+}
+
+.rdrDayStartPreview, .rdrDayInPreview, .rdrDayEndPreview {
+  border-color: #ef4444 !important;
+}
+
+.rdrDayPassive .rdrDayNumber span {
+  color: #cbd5e1 !important;
+}
+
+.rdrDay:not(.rdrDayPassive):not(.rdrDayDisabled) .rdrSelected ~ .rdrDayNumber span,
+.rdrDay:not(.rdrDayPassive):not(.rdrDayDisabled) .rdrInRange ~ .rdrDayNumber span,
+.rdrDay:not(.rdrDayPassive):not(.rdrDayDisabled) .rdrStartEdge ~ .rdrDayNumber span,
+.rdrDay:not(.rdrDayPassive):not(.rdrDayDisabled) .rdrEndEdge ~ .rdrDayNumber span {
+  color: white !important;
+}
