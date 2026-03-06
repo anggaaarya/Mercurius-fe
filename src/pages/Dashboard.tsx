@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DateRange } from "react-date-range";
-import "react-date-range/dist/styles.css";
-import "react-date-range/dist/theme/default.css";
-// @ts-ignore
 import type { Range } from "react-date-range";
+// @ts-ignore
+import "react-date-range/dist/styles.css";
+// @ts-ignore
+import "react-date-range/dist/theme/default.css";
+
+// ... sisa kode Dashboard sama seperti sebelumnya
 
 // Data dummy dengan tanggal berjarak
 const allData = [
@@ -26,8 +29,16 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const [showCalendar, setShowCalendar] = useState(false);
-  const [range, setRange] = useState([{ startDate: null, endDate: null, key: "selection" }]);
-  const [selectedRange, setSelectedRange] = useState([{ startDate: null, endDate: null, key: "selection" }]);
+  const [range, setRange] = useState<Range[]>([{ 
+    startDate: undefined, 
+    endDate: undefined, 
+    key: "selection" 
+  }]);
+  const [selectedRange, setSelectedRange] = useState<Range[]>([{ 
+    startDate: undefined, 
+    endDate: undefined, 
+    key: "selection" 
+  }]);
   const [filteredData, setFilteredData] = useState(allData);
   const [time, setTime] = useState(new Date());
   const [userRole, setUserRole] = useState("");
@@ -53,8 +64,8 @@ export default function Dashboard() {
   });
 
   const handleSearch = () => {
-    const start = selectedRange[0].startDate;
-    const end = selectedRange[0].endDate;
+    const start = selectedRange[0]?.startDate;
+    const end = selectedRange[0]?.endDate;
 
     if (!start || !end) {
       setFilteredData(allData);
@@ -96,7 +107,7 @@ export default function Dashboard() {
                 className="border rounded-lg px-3 py-2 text-sm w-56 cursor-pointer"
                 placeholder="DD/MM/YY - DD/MM/YY"
                 value={
-                  selectedRange[0].startDate && selectedRange[0].endDate
+                  selectedRange[0]?.startDate && selectedRange[0]?.endDate
                     ? `${formatDate(selectedRange[0].startDate)} - ${formatDate(selectedRange[0].endDate)}`
                     : ""
                 }
@@ -113,8 +124,8 @@ export default function Dashboard() {
                   <div className="flex justify-end mt-3 gap-2">
                     <button
                       onClick={() => {
-                        setRange([{ startDate: null, endDate: null, key: "selection" }]);
-                        setSelectedRange([{ startDate: null, endDate: null, key: "selection" }]);
+                        setRange([{ startDate: undefined, endDate: undefined, key: "selection" }]);
+                        setSelectedRange([{ startDate: undefined, endDate: undefined, key: "selection" }]);
                         setFilteredData(allData);
                         setShowCalendar(false);
                       }}
@@ -201,12 +212,9 @@ export default function Dashboard() {
           </tbody>
         </table>
 
-        {/* INFO TOTAL DATA */}
         <div className="flex justify-between items-center mt-4 text-xs text-slate-400">
-          <div>
-            Menampilkan {filteredData.length} dari {allData.length} data
-          </div>
-          {selectedRange[0].startDate && selectedRange[0].endDate && (
+          <div>Menampilkan {filteredData.length} dari {allData.length} data</div>
+          {selectedRange[0]?.startDate && selectedRange[0]?.endDate && (
             <div>
               Periode: {formatDate(selectedRange[0].startDate)} - {formatDate(selectedRange[0].endDate)}
             </div>

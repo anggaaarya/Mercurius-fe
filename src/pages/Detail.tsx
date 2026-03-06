@@ -110,21 +110,17 @@ export default function Detail() {
   const navigate = useNavigate();
 
   const [time, setTime] = useState(new Date());
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  // ===== STATE UNTUK SEARCH =====
+  const [searchInput, setSearchInput] = useState("");  // Input dari user
+  const [searchTerm, setSearchTerm] = useState("");    // Term yang dipakai filter
+  const [isSearching, setIsSearching] = useState(false); // Loading state
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Efek loading
-  useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, [witel, searchTerm, currentPage]);
 
   const formattedDate = time.toLocaleDateString("id-ID", {
     weekday: "long",
@@ -135,8 +131,39 @@ export default function Detail() {
 
   const dummyData = generateDummy(witel || "");
 
+  // ===== FUNGSI SEARCH DENGAN LOADING =====
+  const handleSearch = () => {
+    if (isSearching) return;
+    
+    setIsSearching(true);
+    
+    // Simulasi delay (nanti diganti dengan async call)
+    setTimeout(() => {
+      setSearchTerm(searchInput);
+      setCurrentPage(1);
+      setIsSearching(false);
+    }, 500);
+  };
+
+  // ===== FUNGSI RESET SEARCH =====
+  const handleReset = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    setCurrentPage(1);
+  };
+
+  // ===== HANDLE KEY PRESS (Enter) =====
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // Filter data berdasarkan searchTerm (BUKAN searchInput)
   const filteredData = dummyData.filter((item) => {
     const term = searchTerm.toLowerCase();
+    if (!term) return true;
+    
     return (
       item.noInet.toLowerCase().includes(term) ||
       item.noTiket.toLowerCase().includes(term) ||
@@ -231,18 +258,34 @@ export default function Detail() {
               <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
               <input
                 placeholder="search"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="pl-9 pr-4 py-2 w-64 bg-slate-100 rounded-full text-sm focus:outline-none"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-9 pr-4 py-2 w-64 bg-slate-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+                disabled={isSearching}
               />
             </div>
-            <button className="bg-red-500 text-white px-6 py-2 rounded-full text-sm shadow-md hover:bg-red-600 transition">
-              SEARCH
+            
+            {/* TOMBOL SEARCH */}
+            <button
+              onClick={handleSearch}
+              disabled={isSearching}
+              className="bg-red-500 text-white px-6 py-2 rounded-full text-sm shadow-md hover:bg-red-600 transition disabled:bg-red-300 disabled:cursor-not-allowed"
+            >
+              {isSearching ? "SEARCHING..." : "SEARCH"}
             </button>
+            
+            {/* TOMBOL RESET */}
+            {searchTerm && !isSearching && (
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 text-sm text-red-500 hover:text-red-600 font-semibold"
+              >
+                RESET
+              </button>
+            )}
           </div>
+          
           <button
             onClick={handleDownloadXLS}
             className="flex items-center gap-2 bg-red-500 text-white px-5 py-2 rounded-full text-sm shadow-md hover:bg-red-600 transition"
@@ -253,108 +296,107 @@ export default function Detail() {
 
         <div className="border-t mb-4"></div>
 
-        {/* TABEL DENGAN LOADING & STICKY HEADER */}
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+        {/* LOADING SPINNER */}
+        {isSearching ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+            <span className="ml-3 text-slate-500">Mencari data...</span>
           </div>
         ) : (
-          <div className="w-full overflow-x-auto">
-            <table className="text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 sticky top-0 z-10">
-                <tr className="border-b border-slate-200 text-slate-600">
-                  {columns.map((col) => (
-                    <th key={col} className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length} className="text-center py-10 text-slate-300">
-                      Tidak ada data
-                    </td>
+          <>
+            {/* TABEL */}
+            <div className="w-full overflow-x-auto">
+              <table className="text-sm whitespace-nowrap">
+                <thead className="bg-slate-50 sticky top-0 z-10">
+                  <tr className="border-b border-slate-200 text-slate-600">
+                    {columns.map((col) => (
+                      <th key={col} className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">
+                        {col}
+                      </th>
+                    ))}
                   </tr>
-                ) : (
-                  paginatedData.map((item) => (
-                    <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 h-14">
-                      {getRowValues(item).map((val, idx) => {
-                        // Kolom isAutoBind (index 18)
-                        if (idx === 18) {
-                          return (
-                            <td key={idx} className="px-4">
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                val === "Yes" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-700"
-                              }`}>
-                                {val}
-                              </span>
-                            </td>
-                          );
-                        }
-                        // Kolom Status (index 11)
-                        else if (idx === 11) {
-                          return (
-                            <td key={idx} className="px-4">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(String(val))}`}>
-                                {val}
-                              </span>
-                            </td>
-                          );
-                        }
-                        // Kolom lainnya
-                        else {
-                          return <td key={idx} className="px-4">{String(val)}</td>;
-                        }
-                      })}
+                </thead>
+                <tbody>
+                  {paginatedData.length === 0 ? (
+                    <tr>
+                      <td colSpan={columns.length} className="text-center py-10 text-slate-300">
+                        {searchTerm ? `Tidak ada data untuk pencarian "${searchTerm}"` : "Tidak ada data"}
+                      </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  ) : (
+                    paginatedData.map((item) => (
+                      <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 h-14">
+                        {getRowValues(item).map((val, idx) => {
+                          if (idx === 18) {
+                            return (
+                              <td key={idx} className="px-4">
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  val === "Yes" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-700"
+                                }`}>
+                                  {val}
+                                </span>
+                              </td>
+                            );
+                          } else if (idx === 11) {
+                            return (
+                              <td key={idx} className="px-4">
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(String(val))}`}>
+                                  {val}
+                                </span>
+                              </td>
+                            );
+                          } else {
+                            return <td key={idx} className="px-4">{String(val)}</td>;
+                          }
+                        })}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        {/* PAGINATION */}
-        {totalPages > 1 && !loading && (
-          <div className="flex justify-end items-center gap-1 mt-5">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 disabled:opacity-30 transition"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 rounded-full text-sm font-medium transition ${
-                  currentPage === page ? "bg-red-500 text-white" : "text-slate-500 hover:bg-slate-100"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 disabled:opacity-30 transition"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+            {/* PAGINATION */}
+            {totalPages > 1 && !isSearching && (
+              <div className="flex justify-end items-center gap-1 mt-5">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 disabled:opacity-30 transition"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-full text-sm font-medium transition ${
+                      currentPage === page ? "bg-red-500 text-white" : "text-slate-500 hover:bg-slate-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 disabled:opacity-30 transition"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
 
-        <div className="mt-2 text-xs text-slate-400 text-right">
-          {!loading && (
-            <>
-              Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-              {Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)} dari {filteredData.length} data
-            </>
-          )}
-        </div>
+            <div className="mt-2 text-xs text-slate-400 text-right">
+              {!isSearching && (
+                <>
+                  Menampilkan {filteredData.length} data
+                  {searchTerm && ` untuk pencarian "${searchTerm}"`}
+                </>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

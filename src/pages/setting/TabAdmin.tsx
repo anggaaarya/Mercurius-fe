@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { districtOptions } from "../../constants/districts";
 
 type AdminItem = {
   email: string;
@@ -20,6 +21,7 @@ export default function TabAdmin({ userRole }: TabAdminProps) {
 
   const [adminEmail, setAdminEmail] = useState("");
   const [adminNik, setAdminNik] = useState("");
+  const [adminDistrict, setAdminDistrict] = useState("");
   const [adminList, setAdminList] = useState<AdminItem[]>([
     { email: "admin1@telkom.com", nik: "123456", nama: "Admin Satu", district: "Jakarta", jabatan: "Manager", active: true },
     { email: "admin2@telkom.com", nik: "789012", nama: "Admin Dua", district: "Banten", jabatan: "Supervisor", active: false },
@@ -29,20 +31,19 @@ export default function TabAdmin({ userRole }: TabAdminProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedAdminName, setSelectedAdminName] = useState("");
 
-  const districtOptions = ["Bandung", "Bekasi", "Bogor", "Cirebon", "Karawang", "Northern Jakarta", "Serang", "Soreang", "Southern Jakarta", "Tangerang", "Tasikmalaya"];
-
   const handleAddAdmin = () => {
     if (!adminEmail || !adminNik) return;
     setAdminList([...adminList, { 
       email: adminEmail, 
       nik: adminNik, 
       nama: "", 
-      district: "", 
+      district: adminDistrict, 
       jabatan: "", 
       active: true 
     }]);
     setAdminEmail("");
     setAdminNik("");
+    setAdminDistrict("");
   };
 
   const handleToggleAdminActive = (index: number) => {
@@ -87,6 +88,16 @@ export default function TabAdmin({ userRole }: TabAdminProps) {
               onChange={(e) => setAdminNik(e.target.value)}
               className="border border-slate-300 rounded-full px-5 py-2 text-sm flex-1 focus:outline-none focus:border-red-400"
             />
+            <select
+              value={adminDistrict}
+              onChange={(e) => setAdminDistrict(e.target.value)}
+              className="border border-slate-300 rounded-full px-5 py-2 text-sm flex-1 focus:outline-none focus:border-red-400"
+            >
+              <option value="">Pilih District</option>
+              {districtOptions.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
             <button
               onClick={handleAddAdmin}
               className="bg-red-500 text-white px-8 py-2 rounded-full text-sm font-semibold hover:bg-red-600 transition shadow-md whitespace-nowrap"
